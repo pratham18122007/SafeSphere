@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
-import db from '../db';
+import { dbService } from '../db';
 import { generateToken } from '../auth';
 
 const router = Router();
@@ -15,7 +15,7 @@ router.post('/login', async (req: Request, res: Response) => {
     }
 
     // Check institution first
-    const institution = db.institutions.find(i => i.email === email.toLowerCase());
+    const institution = await dbService.findInstitutionByEmail(email);
     if (institution) {
       const valid = await bcrypt.compare(password, institution.passwordHash);
       if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
@@ -26,7 +26,7 @@ router.post('/login', async (req: Request, res: Response) => {
       });
     }
 
-    const user = db.users.find(u => u.email === email.toLowerCase());
+    const user = await dbService.findUserByEmail(email);
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
@@ -48,7 +48,8 @@ router.post('/register', async (req: Request, res: Response) => {
     if (!name || !email || !password) {
       return res.status(400).json({ error: 'Name, email, and password required' });
     }
-    if (db.users.find(u => u.email === email.toLowerCase())) {
+    const existing = await dbService.findUserByEmail(email);
+    if (existing) {
       return res.status(409).json({ error: 'Email already registered' });
     }
     const passwordHash = await bcrypt.hash(password, 10);
@@ -60,10 +61,10 @@ router.post('/register', async (req: Request, res: Response) => {
       role: 'user' as const,
       createdAt: new Date().toISOString(),
     };
-    db.users.push(newUser);
+    await dbService.createUser(newUser);
 
     // Add default trusted contacts for new users
-    db.trustedContacts.push({
+    await dbService.addTrustedContact({
       id: `tc-${uuidv4()}`,
       userId: newUser.id,
       name: 'Mom',
@@ -85,7 +86,19 @@ router.post('/register', async (req: Request, res: Response) => {
 // POST /auth/demo - instant demo login
 router.post('/demo', async (req: Request, res: Response) => {
   try {
-    const user = db.users.find(u => u.email === 'demo@safesphere.ai')!;
+    let user = await dbService.findUserByEmail('demo@safesphere.ai');
+    if (!user) {
+      // Fallback demo user if database was modified
+      const demoPasswordHash = await bcrypt.hash('demo1234', 10);
+      user = await dbService.createUser({
+        id: 'user-demo',
+        name: 'Priya Sharma',
+        email: 'demo@safesphere.ai',
+        passwordHash: demoPasswordHash,
+        role: 'user',
+        createdAt: new Date().toISOString(),
+      });
+    }
     const token = generateToken(user.id, user.role);
     return res.json({
       token,

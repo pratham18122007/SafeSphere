@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import db from '../db';
+import { dbService } from '../db';
 import { authenticate } from '../auth';
 import { routeCache } from './routes';
 import { SAFESCORE_CONFIG } from '../safescore';
@@ -8,7 +8,7 @@ import { SAFESCORE_CONFIG } from '../safescore';
 const router = Router();
 
 // POST /journeys/start
-router.post('/start', authenticate, (req: Request, res: Response) => {
+router.post('/start', authenticate, async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.userId;
     const { routeId } = req.body;
@@ -26,7 +26,7 @@ router.post('/start', authenticate, (req: Request, res: Response) => {
       events: [],
     };
 
-    db.journeys.push(journey);
+    await dbService.createJourney(journey);
     return res.status(201).json({ journey, route });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to start journey' });
@@ -34,18 +34,22 @@ router.post('/start', authenticate, (req: Request, res: Response) => {
 });
 
 // GET /journeys/:id
-router.get('/:id', authenticate, (req: Request, res: Response) => {
-  const journey = db.journeys.find(j => j.id === req.params.id);
-  if (!journey) return res.status(404).json({ error: 'Journey not found' });
+router.get('/:id', authenticate, async (req: Request, res: Response) => {
+  try {
+    const journey = await dbService.findJourneyById(req.params.id);
+    if (!journey) return res.status(404).json({ error: 'Journey not found' });
 
-  const route = routeCache.get(journey.routeId);
-  return res.json({ journey, route: route || null });
+    const route = routeCache.get(journey.routeId);
+    return res.json({ journey, route: route || null });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to fetch journey' });
+  }
 });
 
 // POST /journeys/:id/events — trigger a simulated safety event
-router.post('/:id/events', authenticate, (req: Request, res: Response) => {
+router.post('/:id/events', authenticate, async (req: Request, res: Response) => {
   try {
-    const journey = db.journeys.find(j => j.id === req.params.id);
+    const journey = await dbService.findJourneyById(req.params.id);
     if (!journey) return res.status(404).json({ error: 'Journey not found' });
 
     const { type, severity } = req.body;
@@ -85,11 +89,13 @@ router.post('/:id/events', authenticate, (req: Request, res: Response) => {
     };
 
     journey.events.push(newEvent);
-    db.safetyEvents.push(newEvent);
+    await dbService.createSafetyEvent(newEvent);
 
     // Apply penalty to journey's safe score
     const penalty = SAFESCORE_CONFIG.eventPenalties[type as keyof typeof SAFESCORE_CONFIG.eventPenalties] || 15;
     journey.currentSafeScore = Math.max(0, journey.currentSafeScore - penalty);
+
+    await dbService.updateJourney(journey);
 
     return res.json({ event: newEvent, newSafeScore: journey.currentSafeScore, journey });
   } catch (err) {
@@ -98,16 +104,15 @@ router.post('/:id/events', authenticate, (req: Request, res: Response) => {
 });
 
 // POST /journeys/:id/reroute
-router.post('/:id/reroute', authenticate, (req: Request, res: Response) => {
+router.post('/:id/reroute', authenticate, async (req: Request, res: Response) => {
   try {
-    const journey = db.journeys.find(j => j.id === req.params.id);
+    const journey = await dbService.findJourneyById(req.params.id);
     if (!journey) return res.status(404).json({ error: 'Journey not found' });
 
     const currentRoute = routeCache.get(journey.routeId);
     if (!currentRoute) return res.status(404).json({ error: 'Current route not found' });
 
     // Generate a new safer route (simulate rerouting)
-    const { v4: uuid } = require('uuid');
     const newRouteId = `route-${uuidv4()}`;
     const safetGain = 15 + Math.round(Math.random() * 10);
     const etaPenalty = 4 + Math.round(Math.random() * 6);
@@ -126,6 +131,8 @@ router.post('/:id/reroute', authenticate, (req: Request, res: Response) => {
     journey.routeId = newRouteId;
     journey.currentSafeScore = newRoute.safeScore;
 
+    await dbService.updateJourney(journey);
+
     return res.json({
       newRoute,
       originalRoute: currentRoute,
@@ -138,12 +145,13 @@ router.post('/:id/reroute', authenticate, (req: Request, res: Response) => {
 });
 
 // POST /journeys/:id/sos
-router.post('/:id/sos', authenticate, (req: Request, res: Response) => {
+router.post('/:id/sos', authenticate, async (req: Request, res: Response) => {
   try {
-    const journey = db.journeys.find(j => j.id === req.params.id);
+    const journey = await dbService.findJourneyById(req.params.id);
     if (!journey) return res.status(404).json({ error: 'Journey not found' });
 
     journey.status = 'emergency';
+    await dbService.updateJourney(journey);
 
     const sosIncident = {
       id: `sos-${uuidv4()}`,
@@ -154,21 +162,24 @@ router.post('/:id/sos', authenticate, (req: Request, res: Response) => {
       status: 'active' as const,
     };
 
-    db.sosIncidents.push(sosIncident);
+    await dbService.createSOSIncident(sosIncident);
 
-    // Simulate trusted contact notifications
-    const contacts = db.trustedContacts.filter(c => c.userId === journey.userId && c.enabled);
-    const notifications = contacts.map(c => ({
+    // Fetch trusted contacts
+    const contacts = await dbService.getTrustedContacts(journey.userId);
+    const enabledContacts = contacts.filter(c => c.enabled);
+    const notifications = enabledContacts.map(c => ({
       contact: c,
       status: 'notified',
       timestamp: new Date().toISOString(),
       message: `Safety alert from ${c.name}'s SafeSphere app — location shared (simulated for demo)`,
     }));
 
+    const safeZones = await dbService.getSafeZones();
+
     return res.json({
       incident: sosIncident,
       notifications,
-      nearbyResources: db.safeZones.slice(0, 3),
+      nearbyResources: safeZones.slice(0, 3),
       message: 'Emergency mode activated. Trusted contacts notified (simulated for demo).',
     });
   } catch (err) {
@@ -177,13 +188,15 @@ router.post('/:id/sos', authenticate, (req: Request, res: Response) => {
 });
 
 // POST /journeys/:id/complete
-router.post('/:id/complete', authenticate, (req: Request, res: Response) => {
+router.post('/:id/complete', authenticate, async (req: Request, res: Response) => {
   try {
-    const journey = db.journeys.find(j => j.id === req.params.id);
+    const journey = await dbService.findJourneyById(req.params.id);
     if (!journey) return res.status(404).json({ error: 'Journey not found' });
 
     journey.status = 'completed';
     journey.completedAt = new Date().toISOString();
+
+    await dbService.updateJourney(journey);
 
     return res.json({ journey, message: 'Journey completed safely.' });
   } catch (err) {
