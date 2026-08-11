@@ -36,8 +36,9 @@ router.post('/login', async (req: Request, res: Response) => {
       token,
       user: { id: user.id, name: user.name, email: user.email, role: user.role },
     });
-  } catch (err) {
-    return res.status(500).json({ error: 'Login failed' });
+  } catch (err: any) {
+    console.error('Login error:', err);
+    return res.status(500).json({ error: err.message || 'Login failed' });
   }
 });
 
@@ -63,23 +64,29 @@ router.post('/register', async (req: Request, res: Response) => {
     };
     await dbService.createUser(newUser);
 
-    // Add default trusted contacts for new users
-    await dbService.addTrustedContact({
-      id: `tc-${uuidv4()}`,
-      userId: newUser.id,
-      name: 'Mom',
-      relationship: 'Mother',
-      contact: '+91 98765 43210',
-      enabled: true,
-    });
+    // Add default trusted contact for new users — non-fatal if it fails
+    try {
+      await dbService.addTrustedContact({
+        id: `tc-${uuidv4()}`,
+        userId: newUser.id,
+        name: 'Mom',
+        relationship: 'Mother',
+        contact: '+91 98765 43210',
+        enabled: true,
+      });
+    } catch (tcErr: any) {
+      // Non-critical: user is already created. Log and continue.
+      console.warn('Could not add default trusted contact (non-fatal):', tcErr?.message);
+    }
 
     const token = generateToken(newUser.id, newUser.role);
     return res.status(201).json({
       token,
       user: { id: newUser.id, name: newUser.name, email: newUser.email, role: newUser.role },
     });
-  } catch (err) {
-    return res.status(500).json({ error: 'Registration failed' });
+  } catch (err: any) {
+    console.error('Registration error:', err);
+    return res.status(500).json({ error: err.message || 'Registration failed' });
   }
 });
 
