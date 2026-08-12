@@ -53,16 +53,24 @@ app.use('/api/safety-events', safetyEventsRoutes);
 
 // Health check — also reports Supabase connection status for debugging
 app.get('/api/health', (_req, res) => {
-  const { isSupabaseConfigured } = require('./supabase');
+  const { isSupabaseConfigured, isUsingServiceRole } = require('./supabase');
+  const rawUrl  = process.env.SUPABASE_URL || '';
+  const rawKey  = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || '';
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
     supabase: isSupabaseConfigured() ? 'connected' : 'in-memory-fallback',
+    supabaseRole: isSupabaseConfigured()
+      ? (isUsingServiceRole() ? 'service_role (RLS bypassed ✅)' : 'anon (RLS active ⚠️)')
+      : 'none',
     env: {
-      hasSupabaseUrl: !!process.env.SUPABASE_URL,
-      hasSupabaseKey: !!(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY),
-      hasJwtSecret: !!process.env.JWT_SECRET,
-      nodeEnv: process.env.NODE_ENV || 'development',
+      hasSupabaseUrl:     !!rawUrl,
+      supabaseUrlPrefix:  rawUrl  ? rawUrl.substring(0, 20)  + '...' : 'MISSING',
+      hasSupabaseKey:     !!rawKey,
+      supabaseKeyLength:  rawKey.length,
+      supabaseKeyPrefix:  rawKey  ? rawKey.substring(0, 10) + '...' : 'MISSING',
+      hasJwtSecret:       !!process.env.JWT_SECRET,
+      nodeEnv:            process.env.NODE_ENV || 'development',
     },
   });
 });
