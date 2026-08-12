@@ -471,7 +471,7 @@ export const dbService = {
 
   async createUser(user: User): Promise<User> {
     if (supabase && isSupabaseConfigured()) {
-      await supabase.from('users').insert({
+      const { error } = await supabase.from('users').insert({
         id: user.id,
         name: user.name,
         email: user.email.toLowerCase(),
@@ -479,6 +479,10 @@ export const dbService = {
         role: user.role,
         created_at: user.createdAt,
       });
+      if (error) {
+        console.error('Supabase createUser error:', error);
+        throw new Error(`Database error: ${error.message}`);
+      }
       return user;
     }
     mem.users.push(user);
@@ -526,7 +530,7 @@ export const dbService = {
 
   async addTrustedContact(tc: TrustedContact): Promise<TrustedContact> {
     if (supabase && isSupabaseConfigured()) {
-      await supabase.from('trusted_contacts').insert({
+      const { error } = await supabase.from('trusted_contacts').insert({
         id: tc.id,
         user_id: tc.userId,
         name: tc.name,
@@ -534,6 +538,10 @@ export const dbService = {
         contact: tc.contact,
         enabled: tc.enabled,
       });
+      if (error) {
+        console.error('Supabase addTrustedContact error:', error);
+        throw new Error(`Database error: ${error.message}`);
+      }
       return tc;
     }
     mem.trustedContacts.push(tc);
