@@ -3,9 +3,15 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const supabaseUrl = process.env.SUPABASE_URL || '';
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const supabaseKey = serviceRoleKey || process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || '';
+function sanitizeEnv(val?: string): string {
+  if (!val) return '';
+  // Strip bullet points (U+2022 / 8226), zero-width spaces, and surrounding whitespace/quotes
+  return val.replace(/[\u2022\u200B\uFEFF]/g, '').trim().replace(/^["']|["']$/g, '');
+}
+
+const supabaseUrl = sanitizeEnv(process.env.SUPABASE_URL);
+const serviceRoleKey = sanitizeEnv(process.env.SUPABASE_SERVICE_ROLE_KEY);
+const supabaseKey = serviceRoleKey || sanitizeEnv(process.env.SUPABASE_KEY) || sanitizeEnv(process.env.SUPABASE_ANON_KEY);
 
 export const isSupabaseConfigured = (): boolean => {
   return Boolean(supabaseUrl && supabaseKey && supabaseUrl.startsWith('http'));
