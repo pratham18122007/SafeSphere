@@ -397,6 +397,40 @@ body {
 .alert-success { background: #f0fdf4; border: 1.5px solid #bbf7d0; color: #166534; }
 .alert-info { background: #eff6ff; border: 1.5px solid #bfdbfe; color: #1e40af; }
 
+/* Gradient Hero */
+.hero-gradient {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #2563eb 100%);
+}
+
+/* Glassmorphism Overlay */
+.glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+/* Segment Score Bar */
+.score-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: #f1f5f9;
+  overflow: hidden;
+}
+
+.score-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Safe Score Color Helpers */
+.score-very-safe { color: #16a34a; }
+.score-safe { color: #65a30d; }
+.score-moderate { color: #d97706; }
+.score-elevated { color: #ea580c; }
+.score-high { color: #dc2626; }
+
 /* Institutional Responsive Grid */
 .inst-grid {
   display: grid;
