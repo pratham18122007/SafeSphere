@@ -117,7 +117,7 @@ export default function InstitutionOverviewPage() {
         </div>
 
         {/* Lower grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24 }}>
           {/* Severity breakdown */}
           <div style={{ background: '#1e293b', borderRadius: 16, padding: 24, border: '1px solid #334155' }}>
             <h3 style={{ color: 'white', fontWeight: 700, marginBottom: 20 }}>Incidents by Severity</h3>

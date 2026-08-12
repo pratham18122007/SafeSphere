@@ -43,7 +43,7 @@ export default function HomePage() {
   const firstName = user?.name?.split(' ')[0] || 'there';
 
   return (
-    <div style={{ background: 'var(--bg-primary)', minHeight: '100vh', paddingBottom: 80, fontFamily: 'Inter, sans-serif' }}>
+    <div className="nav-padded" style={{ background: 'var(--bg-primary)', minHeight: '100vh', fontFamily: 'Inter, sans-serif' }}>
       {/* Header / Hero */}
       <div className="hero-gradient" style={{ padding: '48px 20px 80px', position: 'relative', overflow: 'hidden' }}>
         {/* Background pattern */}
@@ -54,7 +54,7 @@ export default function HomePage() {
           </svg>
         </div>
 
-        <div style={{ position: 'relative', maxWidth: 480, margin: '0 auto' }}>
+        <div style={{ position: 'relative', maxWidth: 540, margin: '0 auto' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
             <div>
               <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginBottom: 4 }}>{greeting},</p>
@@ -93,7 +93,7 @@ export default function HomePage() {
       </div>
 
       {/* Main content */}
-      <div style={{ maxWidth: 480, margin: '0 auto', padding: '0 16px' }}>
+      <div style={{ maxWidth: 540, margin: '0 auto', padding: '0 16px' }}>
         {/* Search bar */}
         <div style={{ background: 'white', borderRadius: 'var(--radius)', boxShadow: '0 8px 30px rgba(0,0,0,0.12)', padding: '6px 6px 6px 18px', display: 'flex', alignItems: 'center', gap: 10, marginTop: -28, position: 'relative', zIndex: 10, border: '1px solid var(--border)', cursor: 'pointer' }}
           onClick={() => navigate('/search')}

@@ -97,7 +97,7 @@ export default function InstitutionHeatmapPage() {
         {/* Risk zones table */}
         <div style={{ background: '#1e293b', borderRadius: 16, padding: 24, border: '1px solid #334155', marginTop: 24 }}>
           <h3 style={{ color: 'white', fontWeight: 700, marginBottom: 16 }}>High-Risk Zones Summary</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
             {[
               { zone: 'Hostel Road', risk: 'High', score: 38, incidents: 3 },
               { zone: 'Night Market Area', risk: 'Critical', score: 30, incidents: 2 },

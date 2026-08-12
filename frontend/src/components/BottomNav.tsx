@@ -8,11 +8,20 @@ interface BottomNavProps {
 
 export default function BottomNav({ onSOS }: BottomNavProps) {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isActive = (path: string) => location.pathname === path;
 
+  const handleSosClick = () => {
+    if (onSOS) {
+      onSOS();
+    } else {
+      navigate('/emergency');
+    }
+  };
+
   return (
-    <nav className="bottom-nav">
+    <nav className="bottom-nav" aria-label="Bottom Navigation">
       <NavLink to="/home" className={`nav-item ${isActive('/home') ? 'active' : ''}`}>
         <Home size={20} />
         <span>Home</span>
@@ -26,8 +35,8 @@ export default function BottomNav({ onSOS }: BottomNavProps) {
       <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <button
           className="sos-btn"
-          onClick={onSOS}
-          aria-label="Emergency SOS"
+          onClick={handleSosClick}
+          aria-label="Emergency SOS Alert"
         >
           SOS
         </button>

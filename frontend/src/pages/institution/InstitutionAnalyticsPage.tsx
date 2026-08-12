@@ -27,7 +27,7 @@ export default function InstitutionAnalyticsPage() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             {/* Summary cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16 }}>
               {[
                 { label: 'Total Incidents', value: data?.summary?.totalIncidents, color: '#dc2626' },
                 { label: 'Resolution Rate', value: data?.summary?.resolvedRate + '%', color: '#16a34a' },

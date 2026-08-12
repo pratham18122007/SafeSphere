@@ -33,30 +33,32 @@ export default function SearchPage() {
   };
 
   return (
-    <div style={{ background: 'var(--bg-primary)', minHeight: '100vh', fontFamily: 'Inter, sans-serif' }}>
+    <div className="nav-padded" style={{ background: 'var(--bg-primary)', minHeight: '100vh', fontFamily: 'Inter, sans-serif' }}>
       <div style={{ background: 'white', padding: '20px 16px', boxShadow: 'var(--shadow-sm)', position: 'sticky', top: 0, zIndex: 50 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
-          <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-            <ArrowLeft size={24} color="var(--text-primary)" />
-          </button>
-          <h1 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0 }}>Where to?</h1>
-        </div>
+        <div style={{ maxWidth: 540, margin: '0 auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+            <button onClick={() => navigate(-1)} aria-label="Go Back" style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 4 }}>
+              <ArrowLeft size={24} color="var(--text-primary)" />
+            </button>
+            <h1 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0 }}>Where to?</h1>
+          </div>
 
-        <div style={{ position: 'relative' }}>
-          <Search size={20} color="var(--text-muted)" style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)' }} />
-          <input
-            autoFocus
-            type="text"
-            className="input"
-            placeholder="Search destination..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            style={{ paddingLeft: 48, borderRadius: 999, border: '1.5px solid var(--border)', background: 'var(--bg-primary)' }}
-          />
+          <div style={{ position: 'relative' }}>
+            <Search size={20} color="var(--text-muted)" style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)' }} />
+            <input
+              autoFocus
+              type="text"
+              className="input"
+              placeholder="Search destination..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              style={{ paddingLeft: 48, borderRadius: 999, border: '1.5px solid var(--border)', background: 'var(--bg-primary)' }}
+            />
+          </div>
         </div>
       </div>
 
-      <div style={{ padding: '16px' }}>
+      <div style={{ maxWidth: 540, margin: '0 auto', padding: '16px' }}>
         {loading ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}>
             <div className="spinner" style={{ borderTopColor: 'var(--primary)', borderColor: 'var(--border)' }} />

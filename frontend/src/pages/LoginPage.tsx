@@ -84,40 +84,40 @@ export default function LoginPage() {
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: 32 }}>Sign in to continue your safe journey</p>
 
           {/* Demo button */}
-          <button onClick={handleDemo} disabled={loading} className="btn btn-full" style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', color: 'white', marginBottom: 20, gap: 8 }}>
-            <Zap size={16} />
+          <button onClick={handleDemo} disabled={loading} className="btn btn-secondary btn-full" style={{ marginBottom: 20, gap: 8 }}>
+            <Zap size={16} color="var(--primary)" />
             {loading ? 'Loading...' : 'Try Demo Account (Judge-Friendly)'}
           </button>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
             <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-            <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>or sign in</span>
+            <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>or sign in with email</span>
             <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
           </div>
 
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
-              <label style={{ display: 'block', fontSize: '0.83rem', fontWeight: 600, marginBottom: 8, color: 'var(--text-secondary)' }}>Email</label>
+              <label style={{ display: 'block', fontSize: '0.83rem', fontWeight: 600, marginBottom: 8, color: 'var(--text-secondary)' }}>Email Address</label>
               <input type="email" className="input" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required />
             </div>
             <div>
               <label style={{ display: 'block', fontSize: '0.83rem', fontWeight: 600, marginBottom: 8, color: 'var(--text-secondary)' }}>Password</label>
               <div style={{ position: 'relative' }}>
                 <input type={showPw ? 'text' : 'password'} className="input" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required style={{ paddingRight: 44 }} />
-                <button type="button" onClick={() => setShowPw(!showPw)} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex' }}>
-                  {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                <button type="button" onClick={() => setShowPw(!showPw)} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', padding: 8 }}>
+                  {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
 
             {error && (
-              <div className="alert-banner alert-danger" style={{ fontSize: '0.85rem', color: 'var(--danger)' }}>
+              <div className="alert-banner alert-danger" style={{ fontSize: '0.85rem' }}>
                 {error}
               </div>
             )}
 
-            <button type="submit" disabled={loading} className="btn btn-ghost btn-full" style={{ marginTop: 4 }}>
-              {loading ? <div className="spinner" style={{ borderTopColor: 'var(--primary)', borderColor: 'var(--border)' }} /> : null}
+            <button type="submit" disabled={loading} className="btn btn-primary btn-full" style={{ marginTop: 4 }}>
+              {loading ? <div className="spinner" /> : null}
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
