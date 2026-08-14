@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { calculateSafeScore } from '../safescore';
+import { getAreaSafetyData } from '../services/overpass';
 
 const router = Router();
 
@@ -36,7 +37,7 @@ const CURRENT_LOCATION = {
 };
 
 // Route segment templates for different areas
-function generateRouteSegments(routeType: string, originZone: string, destZone: string) {
+async function generateRouteSegments(routeType: string, originZone: string, destZone: string, realData: any) {
   const segments = [];
   const segmentCount = 3;
 
@@ -68,17 +69,17 @@ function generateRouteSegments(routeType: string, originZone: string, destZone: 
 
   for (let i = 0; i < segmentCount; i++) {
     const historical = routeType === 'safest' ? 85 : routeType === 'fastest' ? 55 : 75;
-    const lighting = profile.lighting[i];
-    const crowd = profile.crowd[i];
+    const lighting = realData.success ? realData.lightingQuality : profile.lighting[i];
+    const crowd = realData.success ? realData.crowdActivity : profile.crowd[i];
     const incidentRisk = profile.incident[i];
-    const isolationRisk = profile.isolation[i];
+    const isolationRisk = realData.success ? realData.isolationRisk : profile.isolation[i];
 
     const segScore = calculateSafeScore({
       historicalSafety: historical,
       lightingQuality: lighting,
       crowdActivity: crowd,
       routeAccessibility: 75,
-      proximityToSafeZones: 65,
+      proximityToSafeZones: realData.success ? realData.proximityToSafeZones : 65,
       incidentRisk,
       isolationRisk,
     });
@@ -99,11 +100,11 @@ function generateRouteSegments(routeType: string, originZone: string, destZone: 
   return segments;
 }
 
-function generateRoute(
+async function generateRoute(
   origin: any,
   destination: any,
   routeType: 'fastest' | 'safest' | 'balanced'
-): any {
+): Promise<any> {
   const baseDist = Math.sqrt(
     Math.pow(destination.latitude - origin.latitude, 2) +
     Math.pow(destination.longitude - origin.longitude, 2)
@@ -121,24 +122,25 @@ function generateRoute(
     balanced: Math.round(baseDist * 5),
   };
 
-  const components = {
-    fastest: { historical: 55, lighting: 55, crowd: 55, accessibility: 80, proximity: 50, incident: 45, isolation: 40 },
-    safest:  { historical: 88, lighting: 88, crowd: 82, accessibility: 85, proximity: 85, incident: 8, isolation: 8 },
-    balanced:{ historical: 75, lighting: 78, crowd: 70, accessibility: 78, proximity: 70, incident: 22, isolation: 20 },
+    fastest: { historical: 55, accessibility: 80, incident: 45 },
+    safest:  { historical: 88, accessibility: 85, incident: 8 },
+    balanced:{ historical: 75, accessibility: 78, incident: 22 },
   };
 
   const c = components[routeType];
+  const realData = await getAreaSafetyData(destination.latitude, destination.longitude);
+
   const score = calculateSafeScore({
     historicalSafety: c.historical,
-    lightingQuality: c.lighting,
-    crowdActivity: c.crowd,
+    lightingQuality: realData.success ? realData.lightingQuality : (routeType === 'safest' ? 88 : 60),
+    crowdActivity: realData.success ? realData.crowdActivity : (routeType === 'safest' ? 82 : 60),
     routeAccessibility: c.accessibility,
-    proximityToSafeZones: c.proximity,
+    proximityToSafeZones: realData.success ? realData.proximityToSafeZones : 70,
     incidentRisk: c.incident,
-    isolationRisk: c.isolation,
+    isolationRisk: realData.success ? realData.isolationRisk : (routeType === 'safest' ? 10 : 30),
   });
 
-  const segments = generateRouteSegments(routeType, origin.zone, destination.zone);
+  const segments = await generateRouteSegments(routeType, origin.zone, destination.zone, realData);
   const routeId = `route-${uuidv4()}`;
   segments.forEach(s => (s.routeId = routeId));
 
@@ -172,12 +174,12 @@ function generateRoute(
     warnings: warningsByType[routeType],
     scoreBreakdown: {
       historicalSafety: c.historical,
-      lightingQuality: c.lighting,
-      crowdActivity: c.crowd,
+      lightingQuality: realData.success ? realData.lightingQuality : (routeType === 'safest' ? 88 : 60),
+      crowdActivity: realData.success ? realData.crowdActivity : (routeType === 'safest' ? 82 : 60),
       routeAccessibility: c.accessibility,
-      proximityToSafeZones: c.proximity,
+      proximityToSafeZones: realData.success ? realData.proximityToSafeZones : 70,
       incidentRisk: c.incident,
-      isolationRisk: c.isolation,
+      isolationRisk: realData.success ? realData.isolationRisk : (routeType === 'safest' ? 10 : 30),
     },
   };
 }
@@ -195,7 +197,7 @@ router.get('/search', (req: Request, res: Response) => {
 });
 
 // POST /routes/calculate — generate fastest/safest/balanced routes
-router.post('/calculate', (req: Request, res: Response) => {
+router.post('/calculate', async (req: Request, res: Response) => {
   try {
     const { originId, destinationId, originAddress } = req.body;
 
@@ -208,11 +210,11 @@ router.post('/calculate', (req: Request, res: Response) => {
     const destination = DESTINATIONS.find(d => d.id === destinationId);
     if (!destination) return res.status(404).json({ error: 'Destination not found' });
 
-    const routes = [
+    const routes = await Promise.all([
       generateRoute(origin, destination, 'fastest'),
       generateRoute(origin, destination, 'safest'),
       generateRoute(origin, destination, 'balanced'),
-    ];
+    ]);
 
     // Cache routes for later retrieval
     routes.forEach(r => routeCache.set(r.id, r));
