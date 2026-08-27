@@ -11,6 +11,9 @@ SafeSphere is a safety-aware navigation and journey intelligence platform design
 - **Emergency SOS**: Immediate alert system notifying trusted contacts with real-time location.
 - **Institutional Command Center**: Aggregated, anonymized intelligence for security teams.
 
+
+Live Link - https://safe-sphere-blue.vercel.app/
+
 For full documentation, refer to:
 - [DOCUMENTATION.md](./DOCUMENTATION.md) - Full Product and Technical specs
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - System architecture diagram and details
