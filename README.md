@@ -351,7 +351,6 @@ Organizations receive an aggregated view of safety conditions around their campu
 
 ![SafeSphere Institutional Dashboard](./assets/institutional-dashboard.png)
 
-> **Note:** Add the three screenshots to an `assets/` directory in the repository using the filenames above.
 
 ---
 
@@ -970,7 +969,6 @@ The repository includes additional technical documentation covering the architec
 * ⚙️ [**Installation & Deployment Guide**](./INSTALLATION.md) — Local development setup, environment variables, and deployment instructions
 * 🗄️ [**Database Schema & RLS Policies**](./database-schema.sql) — PostgreSQL schema, tables, relationships, and Row-Level Security policies
 
-> 💡 These are **relative repository links**, so GitHub will automatically resolve them to the corresponding files in the repository.
 
 ---
 
