@@ -963,20 +963,27 @@ into a single safety-aware mobility ecosystem.
 
 # 📚 Documentation
 
-The repository includes additional technical documentation:
+The repository includes additional technical documentation covering the architecture, implementation, deployment, and database design.
 
-* `ARCHITECTURE.md` — System architecture and data flow
-* `DOCUMENTATION.md` — Product and technical specifications
-* `INSTALLATION.md` — Local setup and deployment instructions
-* `database-schema.sql` — Database schema and RLS policies
+* 📐 [**Architecture & Data Flow**](./ARCHITECTURE.md) — System architecture, services, APIs, data flow, and technical design
+* 📖 [**Product & Technical Documentation**](./DOCUMENTATION.md) — Detailed product features, workflows, implementation details, and specifications
+* ⚙️ [**Installation & Deployment Guide**](./INSTALLATION.md) — Local development setup, environment variables, and deployment instructions
+* 🗄️ [**Database Schema & RLS Policies**](./database-schema.sql) — PostgreSQL schema, tables, relationships, and Row-Level Security policies
+
+> 💡 These are **relative repository links**, so GitHub will automatically resolve them to the corresponding files in the repository.
 
 ---
 
 # 🌐 Links
 
-**Live Demo:** `safe-sphere-blue.vercel.app`
-
-**Repository:** `github.com/pratham18122007/SafeSphere`
+| Resource                  | Link                                                                    |
+| ------------------------- | ----------------------------------------------------------------------- |
+| 🚀 **Live Demo**          | [**Open SafeSphere →**](https://safe-sphere-blue.vercel.app/)           |
+| 💻 **GitHub Repository**  | [**View Source Code →**](https://github.com/pratham18122007/SafeSphere) |
+| 📐 **Architecture**       | [**Read Architecture →**](./ARCHITECTURE.md)                            |
+| 📖 **Documentation**      | [**Read Documentation →**](./DOCUMENTATION.md)                          |
+| ⚙️ **Installation Guide** | [**Setup SafeSphere →**](./INSTALLATION.md)                             |
+| 🗄️ **Database Schema**   | [**View Database Schema →**](./database-schema.sql)                     |
 
 ---
 
